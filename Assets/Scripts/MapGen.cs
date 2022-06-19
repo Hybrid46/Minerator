@@ -13,7 +13,7 @@ public class MapGen : Singleton<MapGen>
     //public BoundsInt worldBounds;
 
     public Vector3Int renderDistance = new Vector3Int(200, 200, 200);
-    public Vector2 offsetV;
+    [HideInInspector] public Vector2 offsetV;
     public Transform playerTransform;
     public Dictionary<Vector3Int, Chunk> ChunkCells = new Dictionary<Vector3Int, Chunk>();
     public Material TerrainMat;
@@ -33,7 +33,7 @@ public class MapGen : Singleton<MapGen>
 
     private int currentChunkCount = 0;
 
-    private Vector3Int chunkSnapVector;
+    [HideInInspector] public Vector3Int chunkSnapVector;
 
     //generate
     NativeArray<Point> Points;
@@ -44,7 +44,7 @@ public class MapGen : Singleton<MapGen>
         Points = new NativeArray<Point>(chunkSize.x * chunkSize.y * chunkSize.z, Allocator.Persistent);
         //chunkMaterials = new NativeArray<MaterialType>(materials.Count, Allocator.Persistent);
 
-      offsetV = new Vector2(UnityEngine.Random.Range(0, 9999999), UnityEngine.Random.Range(0, 9999999));
+        offsetV = new Vector2(UnityEngine.Random.Range(0, 9999999), UnityEngine.Random.Range(0, 9999999));
         chunkSnapVector = new Vector3Int(chunkSize.x - 2, chunkSize.y - 2, chunkSize.z - 2);
 
         //QualitySettings.vSyncCount = 0;
@@ -179,6 +179,16 @@ public class MapGen : Singleton<MapGen>
     next:
 
         if (Input.GetKeyDown(KeyCode.Escape)) Application.Quit(); //escape pressed
+
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+            Ray raym = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit hitm;
+            if (Physics.Raycast(raym, out hitm))
+            {
+                Instantiate(PrefabHolder.instance.prefabs["GlowLight"], hitm.point, Quaternion.identity);
+            }
+        }
 
 
         //mouse click(mining the terrain)

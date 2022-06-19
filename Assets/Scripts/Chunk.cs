@@ -13,7 +13,7 @@ public class Chunk : MonoBehaviour
     private MeshFilter myMeshFilter;
     private Mesh myMesh;
     private MeshCollider myMeshCollider;
-    private Vector3 distanceToPlayer;
+    private float distanceToPlayer;
 
     public void InitMesh()
     {
@@ -47,11 +47,9 @@ public class Chunk : MonoBehaviour
 
     private void Update()
     {
-        distanceToPlayer = myTransform.position - MapGen.instance.playerTransform.position;
+        distanceToPlayer = Vector3.Distance(MapGen.instance.playerTransform.position, myTransform.position);
 
-        if (distanceToPlayer.x > MapGen.instance.renderDistance.x * 2f ||
-            distanceToPlayer.y > MapGen.instance.renderDistance.y * 2f ||
-            distanceToPlayer.z > MapGen.instance.renderDistance.z * 2f)
+        if (distanceToPlayer > MapGen.instance.renderDistance.x * 2.0f)
         {
             gameObject.SetActive(false);
         }
