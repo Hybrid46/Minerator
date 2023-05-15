@@ -5,37 +5,34 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using static StaticUtils;
 
 public class MapGen : Singleton<MapGen>
 {
     //public static Vector3Int mapSizeInChunks = new Vector3Int(10, 10, 10);
-    public static Vector3Int chunkSize = new Vector3Int(16, 16, 16);
+    public static Vector3Int chunkSize = new Vector3Int(17, 17, 17);
     //public BoundsInt worldBounds;
 
     public Vector3Int renderDistance = new Vector3Int(200, 200, 200);
     [HideInInspector] public Vector2 offsetV;
     public Transform playerTransform;
     public Dictionary<Vector3Int, Chunk> ChunkCells = new Dictionary<Vector3Int, Chunk>();
+    public HashSet<Vector3> savedChunks = new HashSet<Vector3>();
     public Material TerrainMat;
 
-    [SerializeField]
-    public List<MaterialType> materials = new List<MaterialType>();
+    private MarchingCubes marchCubes;
 
-    MarchingCubes marchCubes;
-
-    //for mining
     int mineToolSize = 2;
-    float mineSpeed = 0.1f;
+    float mineToolSpeed = 0.1f;
 
     Chunk cScript;
     List<Chunk> chunksToUpdate = new List<Chunk>();
     HashSet<Chunk> chunksToUpdateHS = new HashSet<Chunk>();
 
-    private int currentChunkCount = 0;
+    [SerializeField] private int currentChunkCount = 0;
 
     [HideInInspector] public Vector3Int chunkSnapVector;
 
-    //generate
     NativeArray<Point> Points;
     //NativeArray<MaterialType> chunkMaterials;
 
@@ -45,9 +42,8 @@ public class MapGen : Singleton<MapGen>
         //chunkMaterials = new NativeArray<MaterialType>(materials.Count, Allocator.Persistent);
 
         offsetV = new Vector2(UnityEngine.Random.Range(0, 9999999), UnityEngine.Random.Range(0, 9999999));
-        chunkSnapVector = new Vector3Int(chunkSize.x - 2, chunkSize.y - 2, chunkSize.z - 2);
+        chunkSnapVector = new Vector3Int(chunkSize.x - 1, chunkSize.y - 1, chunkSize.z - 1);
 
-        //QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 60;
 
         /*
@@ -56,8 +52,6 @@ public class MapGen : Singleton<MapGen>
                                     mapSizeInChunks.y * chunkSize.y - mapSizeInChunks.y * chunkSize.y / chunkSize.y, 
                                     mapSizeInChunks.z * chunkSize.z - mapSizeInChunks.z * chunkSize.z / chunkSize.z);
         */
-
-        //Debug.Log(worldBounds.max);
     }
 
     public Chunk CreateChunk(Vector3Int worldPos)
@@ -80,10 +74,9 @@ public class MapGen : Singleton<MapGen>
         GenJob genJob = new GenJob()
         {
             chunkSize = chunkSize,
-            Points = Points,
             chunkPos = currentChunk.chunkWorldPos,
-            //materials = chunkMaterials,
-            offsetV = offsetV
+            offsetV = offsetV,
+            Points = Points
         };
 
         int genJobSize = chunkSize.x * chunkSize.y * chunkSize.z;
@@ -94,7 +87,7 @@ public class MapGen : Singleton<MapGen>
         //copy
         for (int i = 0; i < Points.Length; i++)
         {
-            Vector3Int conv = StaticUtils.Array1Dto3D(i, chunkSize.x, chunkSize.y);
+            Vector3Int conv = Array1Dto3D(i, chunkSize.x, chunkSize.y);
             currentChunk.Points[conv.x, conv.y, conv.z] = Points[i];
         }
 
@@ -106,7 +99,7 @@ public class MapGen : Singleton<MapGen>
         meshFilter.sharedMesh = mesh;
         meshCollider.sharedMesh = mesh;
 
-        currentChunk.InitMesh();
+        currentChunk.GetRefs();
 
         Debug.Log("Chunk generated in: " + (DateTime.Now - exectime).Milliseconds + " ms");
 
@@ -116,34 +109,32 @@ public class MapGen : Singleton<MapGen>
     private void OnDestroy()
     {
         Points.Dispose();
-        //chunkMaterials.Dispose();        
+        //chunkMaterials.Dispose();
     }
 
     [BurstCompile]
     private struct GenJob : IJobParallelFor
     {
         [ReadOnly] public Vector3Int chunkSize;
+        [ReadOnly] public Vector3 chunkPos;
         [ReadOnly] public Vector2 offsetV;
-        //[ReadOnly] public NativeArray<MaterialType> materials;
         public NativeArray<Point> Points;
-        public Vector3 chunkPos;
         public Vector3Int localCoords;
         public Vector3 worldCoords;
-        private MaterialType matType;
 
         public void Execute(int i)
         {
-            localCoords = StaticUtils.Array1Dto3D(i, chunkSize.x, chunkSize.y);
-            worldCoords = new Vector3(chunkPos.x + localCoords.x, chunkPos.y + localCoords.y, chunkPos.z + localCoords.z);
+            localCoords = Array1Dto3D(i, chunkSize.x, chunkSize.y);
+            worldCoords = chunkPos + localCoords;
 
-            //matType = StaticUtils.ChooseMaterialByHeight(height[heightIndexFromLocalCoord], materials);
+            Color color = Color.red;
 
             if (worldCoords.y > 0.0f) //air
-                Points[i] = new Point(localCoords, worldCoords, 0, matType.color, matType);
+                Points[i] = new Point(localCoords, 0, color);
             else if (worldCoords.y == 0.0f) //surface
-                Points[i] = new Point(localCoords, worldCoords, 0.9f, matType.color, matType);
+                Points[i] = new Point(localCoords, 0.9f, color);
             else //undergorund
-                Points[i] = new Point(localCoords, worldCoords, 1f, matType.color, matType);
+                Points[i] = new Point(localCoords, 1f, color);
         }
     }
 
@@ -158,7 +149,6 @@ public class MapGen : Singleton<MapGen>
             {
                 for (int x = (int)playerTransform.position.x - renderDistance.x; x < playerTransform.position.x + renderDistance.x; x += chunkSnapVector.x)
                 {
-
                     Vector3Int pos = Vector3Int.RoundToInt(Snapping.Snap(new Vector3Int(x, y, z), chunkSnapVector, SnapAxis.All));
                     //if (!worldBounds.Contains(pos)) continue;
 
@@ -171,7 +161,6 @@ public class MapGen : Singleton<MapGen>
                         ChunkCells.Add(pos, CreateChunk(pos));
                         goto next;
                     }
-                    //}
                 }
             }
         }
@@ -179,17 +168,6 @@ public class MapGen : Singleton<MapGen>
     next:
 
         if (Input.GetKeyDown(KeyCode.Escape)) Application.Quit(); //escape pressed
-
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            Ray raym = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hitm;
-            if (Physics.Raycast(raym, out hitm))
-            {
-                Instantiate(PrefabHolder.instance.prefabs["GlowLight"], hitm.point, Quaternion.identity);
-            }
-        }
-
 
         //mouse click(mining the terrain)
         if (Input.GetMouseButton(0))
@@ -201,10 +179,8 @@ public class MapGen : Singleton<MapGen>
 #if DEBUG
                 Debug.DrawLine(raym.origin, hitm.point, Color.red);
 #endif
-                if (hitm.transform.TryGetComponent(typeof(Chunk), out Component comp))
+                if (hitm.transform.TryGetComponent(out cScript))
                 {
-                    cScript = (Chunk)comp;
-
                     //checking points
                     Vector3Int hitPoint = new Vector3Int((int)hitm.point.x, (int)hitm.point.y, (int)hitm.point.z);
 
@@ -218,7 +194,7 @@ public class MapGen : Singleton<MapGen>
 #if DEBUG
                                 Debug.DrawLine(hitm.point, point, Color.cyan);
 #endif
-                                if (!StaticUtils.PointInsideSphere(point, hitPoint, mineToolSize)) continue;
+                                if (!PointInsideSphere(point, hitPoint, mineToolSize)) continue;
 
                                 Vector3Int pointLocal = point - cScript.chunkWorldPos;
 
@@ -227,11 +203,11 @@ public class MapGen : Singleton<MapGen>
                                 {
                                     if (Input.GetKey(KeyCode.LeftShift))
                                     {
-                                        cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].density += mineSpeed;
+                                        cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].density += mineToolSpeed;
                                     }
                                     else
                                     {
-                                        cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].density -= mineSpeed;
+                                        cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].density -= mineToolSpeed;
                                     }
 
                                     density = cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].density;
@@ -247,7 +223,6 @@ public class MapGen : Singleton<MapGen>
 #endif
                                     Vector3Int pointLocalNeighb = point - neighbourPosition;
                                     Chunk nChunk = ChunkCells[neighbourPosition];
-
 
                                     if (pointLocalNeighb.x >= 0 && pointLocalNeighb.y >= 0 && pointLocalNeighb.z >= 0 && pointLocalNeighb.x < chunkSize.x && pointLocalNeighb.y < chunkSize.y && pointLocalNeighb.z < chunkSize.z)
                                     {
@@ -299,50 +274,24 @@ public class MapGen : Singleton<MapGen>
         return neighbours;
     }
 
-    public static Vector3 GetPointChunkCoord(int x, int y, int z) => new Vector3 { x = x % chunkSize.x, y = y % chunkSize.y, z = z % chunkSize.z };
-
     private void OnDrawGizmos()
     {
         foreach (KeyValuePair<Vector3Int, Chunk> chunk in ChunkCells)
         {
             if (chunk.Value.isActiveAndEnabled)
             {
-                GizmoExtension.GizmosExtend.DrawBox(chunk.Value.chunkWorldPos, chunkSize, Quaternion.identity, Color.green);
+                Gizmos.color = new Color(0.0f, 1.0f, 1.0f, 0.125f);
+                Gizmos.DrawCube(chunk.Value.chunkWorldPos, chunkSize);
+                Gizmos.color = new Color(0.0f, 1.0f, 1.0f, 0.2f);
+                Gizmos.DrawWireCube(chunk.Value.chunkWorldPos, chunkSize);
             }
             else
             {
-                GizmoExtension.GizmosExtend.DrawBox(chunk.Value.chunkWorldPos, chunkSize, Quaternion.identity, Color.red);
+                Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.125f);
+                Gizmos.DrawCube(chunk.Value.chunkWorldPos, chunkSize);
+                Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.2f);
+                Gizmos.DrawWireCube(chunk.Value.chunkWorldPos, chunkSize);
             }
         }
-
-        /*
-        //Camera matrix
-        for (int z = (int)playerTransform.position.z - renderDistance.z; z < playerTransform.position.z + renderDistance.z; z += chunkSize.z - 1)
-        {
-            for (int y = (int)playerTransform.position.y - renderDistance.y; y < playerTransform.position.y + renderDistance.y; y += chunkSize.y - 1)
-            {
-                for (int x = (int)playerTransform.position.x - renderDistance.x; x < playerTransform.position.x + renderDistance.x; x += chunkSize.x - 1)
-                {
-                    Vector3Int pos = Vector3Int.RoundToInt(Snapping.Snap(new Vector3Int(x, y, z), new Vector3Int(chunkSize.x - 2, chunkSize.y - 2, chunkSize.z - 2), SnapAxis.All));
-
-                    GizmoExtension.GizmosExtend.DrawBox(pos, chunkSize, Quaternion.identity, Color.green);
-                }
-            }
-        }
-        */
     }
-}
-
-[System.Serializable]
-public struct MaterialType
-{
-    public int id;
-    public float minHeight;
-    public float maxHeight;
-    public Color color;
-    [Range(0, 1)]
-    public float metallic;
-    [Range(0, 1)]
-    public float smoothness;
-    public Color emission;
 }

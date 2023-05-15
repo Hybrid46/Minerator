@@ -1,39 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
     public Point[,,] Points = new Point[MapGen.chunkSize.x, MapGen.chunkSize.y, MapGen.chunkSize.z];
-    //public Dictionary<Vector3Int, Point> worldPoints = new Dictionary<Vector3Int, Point>();
 
     public Vector3Int chunkWorldPos;
     public bool saved = false;
-
-    private Transform myTransform;
-    private MeshFilter myMeshFilter;
-    private Mesh myMesh;
-    private MeshCollider myMeshCollider;
     private float distanceToPlayer;
 
-    public void InitMesh()
-    {
-        myTransform = transform;
-        myMeshFilter = GetComponent<MeshFilter>();
-        myMesh = myMeshFilter.sharedMesh;
-        myMeshCollider = GetComponent<MeshCollider>();
+    private Transform m_Transform;
+    private MeshFilter m_MeshFilter;
+    private Mesh m_Mesh;
+    private MeshCollider m_MeshCollider;
 
-        /*
-        for (int z = 0; z < MapGen.chunkSize.z; z++)
-        {
-            for (int y = 0; y < MapGen.chunkSize.y; y++)
-            {
-                for (int x = 0; x < MapGen.chunkSize.x; x++)
-                {
-                    worldPoints.Add(chunkWorldPos + new Vector3Int(x, y, z), Points[x, y, z]);
-                }
-            }
-        }
-        */
+    public void GetRefs()
+    {
+        m_Transform = transform;
+        m_MeshFilter = GetComponent<MeshFilter>();
+        m_Mesh = m_MeshFilter.sharedMesh;
+        m_MeshCollider = GetComponent<MeshCollider>();
     }
 
     public void UpdateChunk()
@@ -41,15 +27,17 @@ public class Chunk : MonoBehaviour
         MarchingCubes marchc = new MarchingCubes(Points, 0.5f);
         Mesh mesh = marchc.CreateMeshData(Points);
 
-        myMeshFilter.sharedMesh = mesh;
-        myMeshCollider.sharedMesh = mesh;
+        m_MeshFilter.sharedMesh = mesh;
+        m_MeshCollider.sharedMesh = mesh;
+
+        saved = false;
     }
 
     private void Update()
     {
-        distanceToPlayer = Vector3.Distance(MapGen.instance.playerTransform.position, myTransform.position);
+        distanceToPlayer = Vector3.Distance(MapGen.instance.playerTransform.position, m_Transform.position);
 
-        if (distanceToPlayer > MapGen.instance.renderDistance.x * 2.0f)
+        if (distanceToPlayer > MapGen.instance.renderDistance.x * 2)
         {
             gameObject.SetActive(false);
         }
@@ -57,18 +45,34 @@ public class Chunk : MonoBehaviour
 
     public void SaveChunkToDisk()
     {
-        Debug.Log("Chunk not saved");
+        throw new NotImplementedException("Chunk not saved");
+
+        //save
+
+        MapGen.instance.savedChunks.Add(m_Transform.position);
+        DestroyChunk();
     }
 
     public void LoadChunkFromDisk()
     {
-        Debug.Log("Chunk not loaded");
+        throw new NotImplementedException("Chunk not loaded");
+
+        if (!MapGen.instance.savedChunks.Contains(m_Transform.position)) throw new Exception("Chunk not saved!");
+
+        //load
+
+        GetRefs();
+        UpdateChunk();
     }
 
     public void DestroyChunk()
     {
-        GetComponentInParent<MapGen>().ChunkCells.Remove(chunkWorldPos);
-        Destroy(myMesh);
+        MapGen.instance.ChunkCells.Remove(chunkWorldPos);
+        Destroy(m_Mesh);
         Destroy(gameObject);
     }
+
+    public Vector3 GetWorldPoint(Vector3 localPoint) => m_Transform.position + localPoint;
+
+    public Vector3 GetLocalPoint(Vector3 worldPoint) => worldPoint - m_Transform.position;
 }
