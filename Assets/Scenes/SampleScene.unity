@@ -175,7 +175,6 @@ GameObject:
   m_Component:
   - component: {fileID: 289789691}
   - component: {fileID: 289789692}
-  - component: {fileID: 289789693}
   - component: {fileID: 289789694}
   m_Layer: 0
   m_Name: GameManager
@@ -215,28 +214,9 @@ MonoBehaviour:
   offsetV: {x: 0, y: 0}
   playerTransform: {fileID: 963194228}
   TerrainMat: {fileID: 2100000, guid: dbde72140696e8944b41e8c343903a25, type: 2}
-  materials:
-  - id: 0
-    minHeight: -1000
-    maxHeight: 1000
-    color: {r: 0, g: 1, b: 1, a: 1}
-    metallic: 0
-    smoothness: 0
-    emission: {r: 0, g: 0, b: 0, a: 0}
   currentChunkCount: 0
   chunkSnapVector: {x: 0, y: 0, z: 0}
---- !u!114 &289789693
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 289789690}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e3f4c058fb0554e4c89e22523a74e722, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  textures: []
 --- !u!114 &289789694
 MonoBehaviour:
   m_ObjectHideFlags: 0

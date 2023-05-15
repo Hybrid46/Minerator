@@ -9,6 +9,16 @@ using static StaticUtils;
 
 public class MapGen : Singleton<MapGen>
 {
+    [Serializable]
+    public class TexturesForAtlas
+    {
+        public Texture2D albedo;
+        public Texture2D normalMap;
+        public Texture2D metallicMap;
+
+        public TexturesForAtlas() { }
+    }
+
     //public static Vector3Int mapSizeInChunks = new Vector3Int(10, 10, 10);
     public static Vector3Int chunkSize = new Vector3Int(17, 17, 17);
     //public BoundsInt worldBounds;
@@ -34,7 +44,8 @@ public class MapGen : Singleton<MapGen>
     [HideInInspector] public Vector3Int chunkSnapVector;
 
     NativeArray<Point> Points;
-    //NativeArray<MaterialType> chunkMaterials;
+
+    public List<TexturesForAtlas> textures;
 
     void Start()
     {
