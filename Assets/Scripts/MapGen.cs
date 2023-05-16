@@ -9,19 +9,10 @@ using static StaticUtils;
 
 public class MapGen : Singleton<MapGen>
 {
-    [Serializable]
-    public class TexturesForAtlas
-    {
-        public Texture2D albedo;
-        public Texture2D normalMap;
-        public Texture2D metallicMap;
-
-        public TexturesForAtlas() { }
-    }
-
-    //public static Vector3Int mapSizeInChunks = new Vector3Int(10, 10, 10);
     public static Vector3Int chunkSize = new Vector3Int(17, 17, 17);
-    //public BoundsInt worldBounds;
+
+    public Vector3 worldSize = new Vector3(200, 200, 200);
+    private Bounds worldBounds;
 
     public Vector3Int renderDistance = new Vector3Int(200, 200, 200);
     [HideInInspector] public Vector2 offsetV;
@@ -45,12 +36,14 @@ public class MapGen : Singleton<MapGen>
 
     NativeArray<Point> Points;
 
-    public List<TexturesForAtlas> textures;
+    [SerializeField] private Texture2DArray albedoArray;
+    [SerializeField] private Texture2DArray normalArray;
+    [SerializeField] private Texture2DArray metallicArray;
 
     void Start()
     {
-        Points = new NativeArray<Point>(chunkSize.x * chunkSize.y * chunkSize.z, Allocator.Persistent);
         //chunkMaterials = new NativeArray<MaterialType>(materials.Count, Allocator.Persistent);
+        Points = new NativeArray<Point>(chunkSize.x * chunkSize.y * chunkSize.z, Allocator.Persistent);
 
         offsetV = new Vector2(UnityEngine.Random.Range(0, 9999999), UnityEngine.Random.Range(0, 9999999));
         chunkSnapVector = new Vector3Int(chunkSize.x - 1, chunkSize.y - 1, chunkSize.z - 1);
@@ -63,6 +56,13 @@ public class MapGen : Singleton<MapGen>
                                     mapSizeInChunks.y * chunkSize.y - mapSizeInChunks.y * chunkSize.y / chunkSize.y, 
                                     mapSizeInChunks.z * chunkSize.z - mapSizeInChunks.z * chunkSize.z / chunkSize.z);
         */
+
+        //Later we can modify textures on the fly! -> generate lower quality atlas for lower spec
+        TextureArrayManager.instance.CreateArray(out albedoArray, out normalArray, out metallicArray);
+        TextureArrayManager.instance.FillUpIndexLookupTable();
+
+        //TODO: terrain shader -> textureArrays
+        //TODO: set array to terrain material
     }
 
     public Chunk CreateChunk(Vector3Int worldPos)

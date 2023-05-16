@@ -176,6 +176,7 @@ GameObject:
   - component: {fileID: 289789691}
   - component: {fileID: 289789692}
   - component: {fileID: 289789694}
+  - component: {fileID: 289789695}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -210,13 +211,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 103ef4a2acfa230489e0dc609b9be79e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  worldSize: {x: 200, y: 200, z: 200}
   renderDistance: {x: 50, y: 50, z: 50}
   offsetV: {x: 0, y: 0}
   playerTransform: {fileID: 963194228}
   TerrainMat: {fileID: 2100000, guid: dbde72140696e8944b41e8c343903a25, type: 2}
   currentChunkCount: 0
   chunkSnapVector: {x: 0, y: 0, z: 0}
-  textures: []
+  albedoArray: {fileID: 0}
+  normalArray: {fileID: 0}
+  metallicArray: {fileID: 0}
 --- !u!114 &289789694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -234,6 +238,27 @@ MonoBehaviour:
   blendDistance: 0
   weight: 1
   sharedProfile: {fileID: 11400000, guid: 70c63dd6a1bd3884d8d40a248f490ef7, type: 2}
+--- !u!114 &289789695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 289789690}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 304b5fc20f71a734e973c79c8a8da690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textures:
+  - textureName: mars
+    albedo: {fileID: 2800000, guid: 70ad575740a0adc49bde70b9ebf613f4, type: 3}
+    normalMap: {fileID: 2800000, guid: 70ad575740a0adc49bde70b9ebf613f4, type: 3}
+    metallicMap: {fileID: 2800000, guid: 70ad575740a0adc49bde70b9ebf613f4, type: 3}
+  - textureName: desert
+    albedo: {fileID: 2800000, guid: 5a1caf4b5ca7b1c43922c0b280e1ea00, type: 3}
+    normalMap: {fileID: 2800000, guid: 5a1caf4b5ca7b1c43922c0b280e1ea00, type: 3}
+    metallicMap: {fileID: 2800000, guid: 5a1caf4b5ca7b1c43922c0b280e1ea00, type: 3}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
