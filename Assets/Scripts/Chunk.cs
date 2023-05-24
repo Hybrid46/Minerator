@@ -9,10 +9,10 @@ public class Chunk : MonoBehaviour
     public bool saved = false;
     private float distanceToPlayer;
 
-    private Transform m_Transform;
-    private MeshFilter m_MeshFilter;
-    private Mesh m_Mesh;
-    private MeshCollider m_MeshCollider;
+    public Transform m_Transform { get; private set; }
+    public MeshFilter m_MeshFilter { get; private set; }
+    public Mesh m_Mesh { get; private set; }
+    public MeshCollider m_MeshCollider { get; private set; }
 
     public void GetRefs()
     {

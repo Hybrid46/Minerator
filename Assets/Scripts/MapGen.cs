@@ -1,4 +1,4 @@
-﻿//#define DEBUG
+﻿#define DEBUG
 using System;
 using System.Collections.Generic;
 using Unity.Burst;
@@ -23,8 +23,12 @@ public class MapGen : Singleton<MapGen>
 
     private MarchingCubes marchCubes;
 
-    int mineToolSize = 2;
-    float mineToolSpeed = 0.1f;
+    [Space(20)]
+    [Header("Mining tool")]
+    public int mineToolSize = 2;
+    public float mineToolSpeed = 0.1f;
+    public Color mineToolColor = Color.black;
+    [Space(20)]
 
     Chunk cScript;
     List<Chunk> chunksToUpdate = new List<Chunk>();
@@ -50,12 +54,8 @@ public class MapGen : Singleton<MapGen>
 
         Application.targetFrameRate = 60;
 
-        /*
-        worldBounds = new BoundsInt(0, 0, 0, 
-                                    mapSizeInChunks.x * chunkSize.x - mapSizeInChunks.x * chunkSize.x / chunkSize.x, 
-                                    mapSizeInChunks.y * chunkSize.y - mapSizeInChunks.y * chunkSize.y / chunkSize.y, 
-                                    mapSizeInChunks.z * chunkSize.z - mapSizeInChunks.z * chunkSize.z / chunkSize.z);
-        */
+
+        worldBounds = new Bounds(Vector3.zero, worldSize);
 
         //Later we can modify textures on the fly! -> generate lower quality atlas for lower spec
         TextureArrayManager.instance.CreateArray(out albedoArray, out normalArray, out metallicArray);
@@ -190,6 +190,9 @@ public class MapGen : Singleton<MapGen>
 #if DEBUG
                 Debug.DrawLine(raym.origin, hitm.point, Color.red);
 #endif
+                //TODO: get chunks from chunkCells dictionary with GetChunkFromWorldPoint()
+                //cScript = GetChunkFromWorldPoint(hitm.point);
+                //if (hitm.collider == cScript.m_MeshCollider)
                 if (hitm.transform.TryGetComponent(out cScript))
                 {
                     //checking points
@@ -204,6 +207,7 @@ public class MapGen : Singleton<MapGen>
                                 Vector3Int point = new Vector3Int(hitPoint.x + xx, hitPoint.y + yy, hitPoint.z + zz);
 #if DEBUG
                                 Debug.DrawLine(hitm.point, point, Color.cyan);
+                                Debug.DrawLine(hitm.point, GetChunkTransformPoint(hitm.point), Color.yellow);
 #endif
                                 if (!PointInsideSphere(point, hitPoint, mineToolSize)) continue;
 
@@ -215,6 +219,7 @@ public class MapGen : Singleton<MapGen>
                                     if (Input.GetKey(KeyCode.LeftShift))
                                     {
                                         cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].density += mineToolSpeed;
+                                        cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].color = mineToolColor;
                                     }
                                     else
                                     {
@@ -258,6 +263,12 @@ public class MapGen : Singleton<MapGen>
             }
         }
     }
+
+    private Vector3Int GetChunkTransformPointInt(Vector3 worldPoint) => Vector3Int.RoundToInt(Snapping.Snap(new Vector3Int((int)worldPoint.x, (int)worldPoint.y, (int)worldPoint.z), chunkSnapVector, SnapAxis.All));
+
+    private Vector3 GetChunkTransformPoint(Vector3 worldPoint) => Snapping.Snap(new Vector3((int)worldPoint.x, (int)worldPoint.y, (int)worldPoint.z), chunkSnapVector, SnapAxis.All);
+
+    public Chunk GetChunkFromWorldPoint(Vector3 worldPoint) => ChunkCells[GetChunkTransformPointInt(worldPoint)];
 
     private List<Vector3Int> GetNeighbourCoords(Vector3Int worldCoord)
     {
