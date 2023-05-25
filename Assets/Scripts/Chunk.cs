@@ -28,7 +28,8 @@ public class Chunk : MonoBehaviour
         Mesh mesh = marchc.CreateMeshData(Points);
 
         m_MeshFilter.sharedMesh = mesh;
-        m_MeshCollider.sharedMesh = mesh;
+
+        if (mesh.vertexCount > 2) m_MeshCollider.sharedMesh = mesh;
 
         saved = false;
     }

@@ -303,16 +303,16 @@ public class MapGen : Singleton<MapGen>
             if (chunk.Value.isActiveAndEnabled)
             {
                 Gizmos.color = new Color(0.0f, 1.0f, 1.0f, 0.125f);
-                Gizmos.DrawCube(chunk.Value.chunkWorldPos, chunkSize);
+                Gizmos.DrawCube(chunk.Value.chunkWorldPos + Vector3.Scale(chunkSize, Vector3.one * 0.5f), chunkSize);
                 Gizmos.color = new Color(0.0f, 1.0f, 1.0f, 0.2f);
-                Gizmos.DrawWireCube(chunk.Value.chunkWorldPos, chunkSize);
+                Gizmos.DrawWireCube(chunk.Value.chunkWorldPos + Vector3.Scale(chunkSize, Vector3.one * 0.5f), chunkSize);
             }
             else
             {
                 Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.125f);
-                Gizmos.DrawCube(chunk.Value.chunkWorldPos, chunkSize);
+                Gizmos.DrawCube(chunk.Value.chunkWorldPos + Vector3.Scale(chunkSize, Vector3.one * 0.5f), chunkSize);
                 Gizmos.color = new Color(1.0f, 0.0f, 0.0f, 0.2f);
-                Gizmos.DrawWireCube(chunk.Value.chunkWorldPos, chunkSize);
+                Gizmos.DrawWireCube(chunk.Value.chunkWorldPos + Vector3.Scale(chunkSize, Vector3.one * 0.5f), chunkSize);
             }
         }
     }
