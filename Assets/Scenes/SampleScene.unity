@@ -215,7 +215,10 @@ MonoBehaviour:
   renderDistance: {x: 50, y: 50, z: 50}
   offsetV: {x: 0, y: 0}
   playerTransform: {fileID: 963194228}
-  TerrainMat: {fileID: 2100000, guid: dbde72140696e8944b41e8c343903a25, type: 2}
+  TerrainMat: {fileID: 2100000, guid: bfd56a788385e91478d850712bbb5387, type: 2}
+  mineToolSize: 2
+  mineToolSpeed: 0.1
+  mineToolColor: {r: 0, g: 0, b: 0, a: 1}
   currentChunkCount: 0
   chunkSnapVector: {x: 0, y: 0, z: 0}
   albedoArray: {fileID: 0}
@@ -423,6 +426,7 @@ MonoBehaviour:
   m_Dithering: 0
   m_ClearDepth: 1
   m_AllowXRRendering: 1
+  m_AllowHDROutput: 1
   m_UseScreenCoordOverride: 0
   m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
   m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
