@@ -211,7 +211,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 103ef4a2acfa230489e0dc609b9be79e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  worldSize: {x: 200, y: 200, z: 200}
+  worldSize: {x: 500, y: 500, z: 500}
   renderDistance: {x: 50, y: 50, z: 50}
   offsetV: {x: 0, y: 0}
   playerTransform: {fileID: 963194228}

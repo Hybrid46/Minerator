@@ -18,18 +18,15 @@ public class Chunk : MonoBehaviour
     {
         m_Transform = transform;
         m_MeshFilter = GetComponent<MeshFilter>();
-        m_Mesh = m_MeshFilter.sharedMesh;
+        m_Mesh = m_MeshFilter.sharedMesh = new Mesh();
         m_MeshCollider = GetComponent<MeshCollider>();
     }
 
     public void UpdateChunk()
     {
-        MarchingCubes marchc = new MarchingCubes(Points, 0.5f);
-        Mesh mesh = marchc.CreateMeshData(Points);
+        MapGen.instance.marchCubes.Marching(m_MeshFilter.sharedMesh, Points, 0.5f);
 
-        m_MeshFilter.sharedMesh = mesh;
-
-        if (mesh.vertexCount > 2) m_MeshCollider.sharedMesh = mesh;
+        if (m_MeshFilter.sharedMesh.vertexCount > 2) m_MeshCollider.sharedMesh = m_MeshFilter.sharedMesh;
 
         saved = false;
     }

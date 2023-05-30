@@ -21,7 +21,7 @@ public class MapGen : Singleton<MapGen>
     public HashSet<Vector3> savedChunks = new HashSet<Vector3>();
     public Material TerrainMat;
 
-    private MarchingCubes marchCubes;
+    public MarchingCubes marchCubes;
 
     [Space(20)]
     [Header("Mining tool")]
@@ -54,7 +54,7 @@ public class MapGen : Singleton<MapGen>
 
         Application.targetFrameRate = 60;
 
-
+        marchCubes = new MarchingCubes(chunkSize);
         worldBounds = new Bounds(Vector3.zero, worldSize);
 
         //Later we can modify textures on the fly! -> generate lower quality atlas for lower spec
@@ -63,6 +63,8 @@ public class MapGen : Singleton<MapGen>
 
         //TODO: terrain shader -> textureArrays
         //TODO: set array to terrain material
+
+        Resources.UnloadUnusedAssets();
     }
 
     public Chunk CreateChunk(Vector3Int worldPos)
@@ -102,18 +104,12 @@ public class MapGen : Singleton<MapGen>
             currentChunk.Points[conv.x, conv.y, conv.z] = Points[i];
         }
 
-        marchCubes = new MarchingCubes(currentChunk.Points, 0.5f);
-        Mesh mesh = marchCubes.CreateMeshData(currentChunk.Points);
-
         meshRenderer.material = TerrainMat;
-
-        meshFilter.sharedMesh = mesh;
-        meshCollider.sharedMesh = mesh;
-
         currentChunk.GetRefs();
+        currentChunk.UpdateChunk();
 
         Debug.Log("Chunk generated in: " + (DateTime.Now - exectime).Milliseconds + " ms");
-
+        
         return currentChunk;
     }
 
@@ -161,7 +157,7 @@ public class MapGen : Singleton<MapGen>
                 for (int x = (int)playerTransform.position.x - renderDistance.x; x < playerTransform.position.x + renderDistance.x; x += chunkSnapVector.x)
                 {
                     Vector3Int pos = Vector3Int.RoundToInt(Snapping.Snap(new Vector3Int(x, y, z), chunkSnapVector, SnapAxis.All));
-                    //if (!worldBounds.Contains(pos)) continue;
+                    if (!worldBounds.Contains(pos)) continue;
 
                     if (ChunkCells.ContainsKey(pos))
                     {
@@ -315,5 +311,10 @@ public class MapGen : Singleton<MapGen>
                 Gizmos.DrawWireCube(chunk.Value.chunkWorldPos + Vector3.Scale(chunkSize, Vector3.one * 0.5f), chunkSize);
             }
         }
+
+        Gizmos.color = new Color(0.0f, 0.0f, 1.0f, 0.125f);
+        Gizmos.DrawCube(worldBounds.center,worldBounds.size);
+        Gizmos.color = new Color(0.0f, 0.0f, 1.0f, 0.2f);
+        Gizmos.DrawCube(worldBounds.center,worldBounds.size);
     }
 }

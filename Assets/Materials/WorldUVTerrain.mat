@@ -64,21 +64,26 @@ Material:
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _CastShadows: 1
+    - _CoolAlbedo: 0
     - _Cull: 2
     - _DstBlend: 0
+    - _EdgeWidth: 0.5
     - _Metallic: 0
     - _QueueControl: 0
     - _QueueOffset: 0
     - _ReceiveShadows: 1
-    - _Smoothness: 0.2
+    - _Smoothness: 1
     - _SrcBlend: 1
     - _Surface: 0
+    - _WarmAlbedo: 0
     - _WorkflowMode: 1
     - _ZTest: 4
     - _ZWrite: 1
     - _ZWriteControl: 0
     m_Colors:
+    - _Cool: {r: 0, g: 1, b: 0.8941176, a: 0}
     - _MainTexTilingOffset: {r: 1, g: 1, b: 0, a: 0}
+    - _Warm: {r: 1, g: 0.6666667, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &2385281454073536810
 MonoBehaviour:
