@@ -5,14 +5,14 @@ public class MarchingCubes
     private Vector3[] _vertices;
     private int[] _triangles;
     //private Color[] _colors;
-    //private Vector2[] _uvs;
+    private Vector2[] _uvs;
     private float _isolevel;
 
     private int _vertexIndex;
 
     private Vector3[] _vertexList;
     //private Color[] _vertexColors;
-    //private Vector2[] _vertexUVs;
+    private Vector2[] _vertexUVs;
     private Point[] _initPoints;
     private int[,,] _cubeIndexes;
 
@@ -22,7 +22,7 @@ public class MarchingCubes
         _vertexIndex = 0;
         _vertexList = new Vector3[12];
         //_vertexColors = new Color[12];
-        //_vertexUVs = new Vector2[12];
+        _vertexUVs = new Vector2[12];
         _initPoints = new Point[8];
         _cubeIndexes = new int[points.GetLength(0) - 1, points.GetLength(1) - 1, points.GetLength(2) - 1];
     }
@@ -33,7 +33,7 @@ public class MarchingCubes
         _vertexIndex = 0;
         _vertexList = new Vector3[12];
         //_vertexColors = new Color[12];
-        //_vertexUVs = new Vector2[12];
+        _vertexUVs = new Vector2[12];
         _initPoints = new Point[8];
         _cubeIndexes = new int[size.x, size.y, size.z];
     }
@@ -81,19 +81,19 @@ public class MarchingCubes
         for (int i = 0; i < row.Length; i += 3)
         {
             _vertices[_vertexIndex] = _vertexList[row[i + 0]];
-            //_uvs[_vertexIndex]= _vertexUVs[row[i + 0]];
+            _uvs[_vertexIndex] = _vertexUVs[row[i + 0]];
             _triangles[_vertexIndex] = _vertexIndex;
             //_colors[_vertexIndex] = _vertexColors[row[i + 0]];
             _vertexIndex++;
 
             _vertices[_vertexIndex] = _vertexList[row[i + 1]];
-            //_uvs[_vertexIndex] = _vertexUVs[row[i + 1]];
+            _uvs[_vertexIndex] = _vertexUVs[row[i + 1]];
             _triangles[_vertexIndex] = _vertexIndex;
             //_colors[_vertexIndex] = _vertexColors[row[i + 1]];
             _vertexIndex++;
 
             _vertices[_vertexIndex] = _vertexList[row[i + 2]];
-            //_uvs[_vertexIndex] = _vertexUVs[row[i + 2]];
+            _uvs[_vertexIndex] = _vertexUVs[row[i + 2]];
             _triangles[_vertexIndex] = _vertexIndex;
             //_colors[_vertexIndex] = _vertexColors[row[i + 2]];
             _vertexIndex++;
@@ -114,19 +114,21 @@ public class MarchingCubes
                 Point point2 = points[edge2];
 
                 _vertexList[i] = VertexInterpolate(point1.localPosition, point2.localPosition, point1.density, point2.density);
-                /*if (point1.localPosition == _vertexList[i])
+
+                //alternative -> average
+                //_vertexUVs[i] = new Vector2((point1.textureIndex + point2.textureIndex) * 0.5f, 0);
+                //_vertexColors[i] = (point1.color + point2.color) * 0.5f;
+
+                if (_vertexList[i] == point1.localPosition)
                 {
-                    _vertexColors[i] = point1.color;
+                    _vertexUVs[i] = new Vector2(point1.textureIndex, 0);
+                    //_vertexColors[i] = point1.color;
                 }
                 else
                 {
-                    _vertexColors[i] = point2.color;
-                }*/
-
-                //alternative
-                //_vertexColors[i] = (point1.color + point2.color) * 0.5f;
-
-                //_vertexUVs[i] = new Vector2(VertexInterpolate(point1.localPosition, point2.localPosition, point1.density, point2.density).x, VertexInterpolate(point1.localPosition, point2.localPosition, point1.density, point2.density).z);
+                    _vertexUVs[i] = new Vector2(point2.textureIndex, 0);
+                    //_vertexColors[i] = point2.color;
+                }
             }
         }
 
@@ -157,8 +159,8 @@ public class MarchingCubes
 
         _vertices = new Vector3[vertexCount];
         _triangles = new int[vertexCount];
+        _uvs = new Vector2[vertexCount];
         //_colors = new Color[vertexCount];
-        //_uvs = new Vector2[vertexCount];
 
         for (int x = 0; x < points.GetLength(0) - 1; x++)
         {
@@ -180,8 +182,8 @@ public class MarchingCubes
         //mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
         mesh.vertices = _vertices;
         mesh.SetTriangles(_triangles, 0);
+        mesh.SetUVs(0, _uvs);
         //mesh.colors = _colors;
-        //mesh.SetUVs(0, _uvs);
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
         mesh.RecalculateTangents();

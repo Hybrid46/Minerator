@@ -6,12 +6,12 @@ public struct Point
 {
     public Vector3 localPosition;
     public float density;
-    public Color color;
+    public float textureIndex;
 
-    public Point(Vector3 localPosition, float density, Color color)
+    public Point(Vector3 localPosition, float density, float textureIndex)
     {
         this.localPosition = localPosition;
         this.density = density;
-        this.color = color;
+        this.textureIndex = textureIndex;
     }
 }

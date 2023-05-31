@@ -27,7 +27,7 @@ public class MapGen : Singleton<MapGen>
     [Header("Mining tool")]
     public int mineToolSize = 2;
     public float mineToolSpeed = 0.1f;
-    public Color mineToolColor = Color.black;
+    [Range(0.0f, 1.0f)] public float mineToolTextureIndex = 0;
     [Space(20)]
 
     Chunk cScript;
@@ -109,7 +109,7 @@ public class MapGen : Singleton<MapGen>
         currentChunk.UpdateChunk();
 
         Debug.Log("Chunk generated in: " + (DateTime.Now - exectime).Milliseconds + " ms");
-        
+
         return currentChunk;
     }
 
@@ -127,21 +127,21 @@ public class MapGen : Singleton<MapGen>
         [ReadOnly] public Vector2 offsetV;
         public NativeArray<Point> Points;
         public Vector3Int localCoords;
-        public Vector3 worldCoords;
+        private Vector3 worldCoords;
 
         public void Execute(int i)
         {
             localCoords = Array1Dto3D(i, chunkSize.x, chunkSize.y);
             worldCoords = chunkPos + localCoords;
 
-            Color color = Color.red;
+            float textureIndex = 0;
 
             if (worldCoords.y > 0.0f) //air
-                Points[i] = new Point(localCoords, 0, color);
+                Points[i] = new Point(localCoords, 0, textureIndex);
             else if (worldCoords.y == 0.0f) //surface
-                Points[i] = new Point(localCoords, 0.9f, color);
+                Points[i] = new Point(localCoords, 0.9f, textureIndex);
             else //undergorund
-                Points[i] = new Point(localCoords, 1f, color);
+                Points[i] = new Point(localCoords, 1f, textureIndex);
         }
     }
 
@@ -215,7 +215,7 @@ public class MapGen : Singleton<MapGen>
                                     if (Input.GetKey(KeyCode.LeftShift))
                                     {
                                         cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].density += mineToolSpeed;
-                                        cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].color = mineToolColor;
+                                        cScript.Points[pointLocal.x, pointLocal.y, pointLocal.z].textureIndex = mineToolTextureIndex;
                                     }
                                     else
                                     {
@@ -313,8 +313,8 @@ public class MapGen : Singleton<MapGen>
         }
 
         Gizmos.color = new Color(0.0f, 0.0f, 1.0f, 0.125f);
-        Gizmos.DrawCube(worldBounds.center,worldBounds.size);
+        Gizmos.DrawCube(worldBounds.center, worldBounds.size);
         Gizmos.color = new Color(0.0f, 0.0f, 1.0f, 0.2f);
-        Gizmos.DrawCube(worldBounds.center,worldBounds.size);
+        Gizmos.DrawCube(worldBounds.center, worldBounds.size);
     }
 }
